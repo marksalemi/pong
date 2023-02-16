@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>2-Player Pong</title>
+	<style>
+		canvas {
+			border: 1px solid black;
+		}
+	</style>
+</head>
+<body>
+	<h1>2-Player Pong</h1>
+	<div>
+		<h2>Instructions:</h2>
+		<p>Player 1 Controls: <strong>Q (Up)</strong>, <strong>A (Down)</strong></p>
+		<p>Player 2 Controls: <strong>P (Up)</strong>, <strong>L (Down)</strong></p>
+	</div>
+	<canvas id="canvas" width="600" height="400"></canvas>
+	<div>
+		<h2>Score:</h2>
+		<p>Player 1: <span id="score1">0</span></p>
+		<p>Player 2: <span id="score2">0</span></p>
+		<button id="resetButton">Reset Score</button>
+	</div>
+	<script>
+		// Get the canvas element and set up the context
+		var canvas = document.getElementById("canvas");
+		var context = canvas.getContext("2d");
+
+		// Create the ball object
+		var ball = {
+			x: canvas.width / 2,
+			y: canvas.height / 2,
+			radius: 10,
+			velocityX: -2.5,
+			velocityY: 2.5
+		};
+
+		// Create the player objects
+		var player1 = {
+			x: 10,
+			y: canvas.height / 2 - 50,
+			width: 10,
+			height: 100,
+			speed: 5,
+			score: 0
+		};
+
+		var player2 = {
+			x: canvas.width - 20,
+			y: canvas.height / 2 - 50,
+			width: 10,
+			height: 100,
+			speed: 5,
+			score: 0
+		};
+
+		// Draw the game objects
+		function draw() {
+			// Clear the canvas
+			context.clearRect(0, 0, canvas.width, canvas.height);
+
+			// Draw the ball
+			context.beginPath();
+			context.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI);
+			context.fill();
+
+			// Draw the players
+			context.fillRect(player1.x, player1.y, player1.width, player1.height);
+			context.fillRect(player2.x, player2.y, player2.width, player2.height);
+		}
+
+		// Move the paddles based on keyboard input
+		function movePaddles() {
+			// Move player 1 paddle
+			if (keys[81]) { // Q key
+				player1.y = Math.max(0, player1.y - player1.speed);
+			}
+			if (keys[65]) { // A key
+				player1.y = Math.min(canvas.height - player1.height, player1.y + player1.speed);
+			}
+
+			// Move player 2 paddle
+			if (keys[80]) { // P key
+				player2.y = Math.max(0, player2.y - player2.speed);
+			}
+			if (keys[76]) { // L key
+				player2.y = Math.min(canvas.height - player2.height, player2.y + player2.speed);
+			}
+		}
+
+		// Move
+        // Update the ball position and check for collisions
+        function update() {
+            // Update the ball position
+            ball.x += ball.velocityX;
+            ball.y += ball.velocityY;
+
+            // Check for top/bottom wall collision
+            if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
+                ball.velocityY = -ball.velocityY;
+            }
+
+            // Check for left/right wall collision
+            if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+                if (ball.x - ball.radius < 0) {
+                    player2.score++;
+                } else {
+                    player1.score++;
+                }
+                reset();
+            }
+
+            // Check for player 1 collision
+            if (ball.x - ball.radius < player1.x + player1.width &&
+                ball.y > player1.y &&
+                ball.y < player1.y + player1.height) {
+                ball.velocityX = -ball.velocityX;
+            }
+
+            // Check for player 2 collision
+            if (ball.x + ball.radius > player2.x &&
+                ball.y > player2.y &&
+                ball.y < player2.y + player2.height) {
+                ball.velocityX = -ball.velocityX;
+            }
+        }
+
+        // Reset the ball and paddles to their starting positions
+        function reset() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.velocityX = -2.5;
+            ball.velocityY = 2.5;
+            player1.y = canvas.height / 2 - 50;
+            player2.y = canvas.height / 2 - 50;
+        }
+
+        // Draw the score on the screen
+        function drawScore() {
+            document.getElementById("score1").innerHTML = player1.score;
+            document.getElementById("score2").innerHTML = player2.score;
+        }
+
+        // Reset the score to 0 for both players
+        function resetScore() {
+            player1.score = 0;
+            player2.score = 0;
+            drawScore();
+        }
+
+        // Set up keyboard event listeners
+        var keys = [];
+        window.addEventListener("keydown", function(e) {
+            keys[e.keyCode] = true;
+        });
+        window.addEventListener("keyup", function(e) {
+            keys[e.keyCode] = false;
+        });
+
+        // Game loop
+        function gameLoop() {
+            movePaddles();
+            update();
+            draw();
+            drawScore();
+        }
+        setInterval(gameLoop, 1000 / 60);
+
+        // Set up reset button event listener
+        document.getElementById("resetButton").addEventListener("click", resetScore);
+    </script>
+</body>
+</html>
